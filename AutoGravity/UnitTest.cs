@@ -69,99 +69,94 @@ namespace AutoGravity
         public void Create_Credit_App_Firefox()
         {
             browser_.Navigate().GoToUrl(HOME_PAGE);
+
+            //1st step is to select get started button
             try
             {
-                //1st step is to select get started button
                 HomePage homePage = new HomePage(browser_);
                 homePage.GetStartedButton.Click();
+            }
+            catch(Exception ex)
+            {
+                Trace.TraceError(ex.Message);
+            }
 
-                //2nd step is to randomly "Select Make"...
-                MakePage makePage = new MakePage(rng_,browser_);
+            //2nd step is to randomly "Select Make"...
+            try
+            {
+                MakePage makePage = new MakePage(rng_, browser_);
                 Trace.WriteLine("MakesCollection Count: " + makePage.MakesCollection.Count);
-                IWebElement randomMakeType = makePage.SelectRandomMakeType;
+                IWebElement randomMakeType = makePage.SelectRandomMakeType();
                 Trace.WriteLine("Make Type Selected: " + makePage.RandomMakeTypeTitle);
                 randomMakeType.Click();
+            }
+            catch(Exception ex)
+            {
+                Trace.TraceError(ex.Message);
+            }
 
+            try
+            {
                 //3rd step is to randomly select a car
                 ModelPage modelPage = new ModelPage(rng_, browser_);
                 Trace.WriteLine("ModelsCollection Count: " + modelPage.ModelsCollection.Count);
-                IWebElement randomModelType = modelPage.SelectRandomModelType;
+                IWebElement randomModelType = modelPage.SelectRandomModelType();
                 Trace.WriteLine("Car Model Selected: " + modelPage.RandomModelTypeTitle);
                 randomModelType.Click();
 
                 //4th step is to Enter Location
-                //check if location modal pops up in webpage ~ stalls if modalPage cannot be found in current webpage
-                if(modelPage.LocationModalContent.Displayed && modelPage.LocationModalContent.Enabled)
+                //check if location modal pops up in webpage ~ stalls if modelPage cannot be found in current webpage
+                if (modelPage.LocationModalContent.Displayed && modelPage.LocationModalContent.Enabled)
                 {
                     Trace.WriteLine("Location Modal is Displayed");
                     modelPage.UseMyLocationButton.Click();
                 }
-
-                //5th step determine if the new page has a inventory list or a trim list
-                try
-                {
-                    IWebElement inventoryList = browser_.FindElement(By.CssSelector("div.InventoryList___2RhEw.container"));
-                    //select first listed inventory item
-                    IWebElement inventoryCard = browser_.FindElement(By.ClassName("InventoryCard___iUPv5"));
-                    inventoryCard.Click();
-                }
-                catch(NoSuchElementException ex2)
-                {
-                    Trace.TraceWarning(ex2.Message);
-                    try
-                    {
-                        IWebElement vehicleTrimsContainer = browser_.FindElement(By.CssSelector("section.vehicleTrims___3EZv9"));
-                        //select first listed trim row
-                        IWebElement vehicleTrimRow = vehicleTrimsContainer.FindElement(By.ClassName("trimListRow___3xZy7"));
-                        vehicleTrimRow.Click();
-                    }
-                    catch(NoSuchElementException ex3)
-                    {
-                        Trace.TraceError(ex3.Message);
-                    }
-                }
-
-                //6th step is to select if its Trade-in? ... select No for now and hit Next
-                //IWebElement nextButton = browser_.FindElement(By.CssSelector("button.newButton___3mgiP"));
-                try
-                {
-                    IWebElement nextButton = browser_.FindElement(By.CssSelector("button.buttonNext___2w_Xa"));
-                    nextButton.Click();
-                    IWebElement nextButton2 = browser_.FindElement(By.CssSelector("button.newButton___3mgiP"));
-                    nextButton2.Submit();
-                }
-                catch(NoSuchElementException ex2)
-                {
-                    Trace.TraceWarning(ex2.Message);
-                    IWebElement nextButton2 = browser_.FindElement(By.CssSelector("button.newButton___3mgiP"));
-                    nextButton2.Submit();
-                }
-
-                //7th step is to select the first dealer available and click on 'Select This Dealer' button to continue
-                IWebElement selectThisDealerButton = browser_.FindElement(By.ClassName("dealerSelectBtn___8r46A"));
-                selectThisDealerButton.Click();
             }
-            catch(NoSuchElementException ex) // catch errors here ~ errors aren't handled here
+            catch(Exception ex)
             {
-                Trace.WriteLine(ex.Message);
-                //IWebElement outer = browser_.FindElement(By.CssSelector("html"));
-                //Trace.WriteLine(outer.GetAttribute("innerHTML"));
-
-                Trace.WriteLine("timeout time in seconds: " + browser_.Manage().Timeouts().ImplicitWait.Duration().TotalSeconds);
-                Trace.WriteLine("coordinate: " + coordinate_);
+                Trace.TraceError(ex.Message);
             }
-            finally
+
+            //5th step determine if the new page has a inventory list or a trim list
+            try
             {
-                //8th step is to stop at "Search For Financing" Personal Information Page
-                IWebElement personalInfoText = browser_.FindElement(By.CssSelector("h4.title"));
-                Assert.AreEqual("Personal Information", personalInfoText.Text);
-                Trace.WriteLine("Test Succeeded!");
+                InventoryPage inventoryPage = new InventoryPage(rng_, browser_);
+                IWebElement inventoryCard = inventoryPage.SelectRandomInventoryCard();
+                Trace.WriteLine("Inventory selected: " + inventoryPage.InventoryCardTitle());
+                inventoryCard.Click();
+            }
+            catch(Exception ex)
+            {
+                Trace.TraceError(ex.Message);
             }
 
-            //9th step is to close the browser and end the test
+            //6th step is to select if its Trade-in? ... select No for now and hit Next
+            //IWebElement nextButton = browser_.FindElement(By.CssSelector("button.newButton___3mgiP"));
+            try
+            {
+                IWebElement nextButton = browser_.FindElement(By.CssSelector("button.buttonNext___2w_Xa"));
+                nextButton.Click();
+                IWebElement nextButton2 = browser_.FindElement(By.CssSelector("button.newButton___3mgiP"));
+                nextButton2.Submit();
+            }
+            catch(NoSuchElementException ex2)
+            {
+                Trace.TraceWarning(ex2.Message);
+                IWebElement nextButton2 = browser_.FindElement(By.CssSelector("button.newButton___3mgiP"));
+                nextButton2.Submit();
+            }
 
+            //7th step is to select the first dealer available and click on 'Select This Dealer' button to continue
+            IWebElement selectThisDealerButton = browser_.FindElement(By.ClassName("dealerSelectBtn___8r46A"));
+            selectThisDealerButton.Click();
 
-            //here I will have to do some QA work and find if there are some things that can be checked for on this website
+            Trace.WriteLine("timeout time in seconds: " + browser_.Manage().Timeouts().ImplicitWait.Duration().TotalSeconds);
+
+            //8th step is to stop at "Search For Financing" Personal Information Page
+            IWebElement personalInfoText = browser_.FindElement(By.CssSelector("h4.title"));
+            Assert.AreEqual("Personal Information", personalInfoText.Text);
+            Trace.WriteLine("Test Succeeded!");
+
         }
     }
 }

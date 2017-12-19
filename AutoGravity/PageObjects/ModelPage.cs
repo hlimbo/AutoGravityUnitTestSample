@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.PageObjects;
-using System.Collections.ObjectModel;
-
 
 namespace AutoGravity.PageObjects
 {
@@ -15,7 +13,6 @@ namespace AutoGravity.PageObjects
         private const string GEO_BUTTON = "geoButton___1PU6W";
         private const string LOC_MODAL = "locationModalContent___3yPhK";
         private Random rng_;//reference obtained from UnitTest
-        private ReadOnlyCollection<IWebElement> modelsCollection_;
         private IWebElement randomModelType_;
 
         public ModelPage(Random rng, IWebDriver driver) : base(driver)
@@ -36,23 +33,18 @@ namespace AutoGravity.PageObjects
         public IWebElement UseMyLocationButton { get; set; }
 
         [FindsBy(How = How.ClassName, Using = CAR_MODEL)]
-        public ReadOnlyCollection<IWebElement> ModelsCollection
+        public IList<IWebElement> ModelsCollection{ get; set; }
+        public bool HasModelsCollection
         {
-            get
-            {
-                modelsCollection_ = driver_.FindElements(By.ClassName(CAR_MODEL));
-                return modelsCollection_;
-            }
+            get { return ModelsCollection.Count > 0; }
         }
 
         //picks a random car model everytime this property is accessed
-        public IWebElement SelectRandomModelType
+        public IWebElement SelectRandomModelType()
         {
-            get
-            {
-                randomModelType_ = ModelsCollection[rng_.Next(ModelsCollection.Count)];
-                return randomModelType_;
-            }
+            randomModelType_ = HasModelsCollection ? ModelsCollection[rng_.Next(ModelsCollection.Count)] : null;
+            if (randomModelType_ == null) throw new NoSuchElementException("SelectRandomModelType() invalid class name: " + CAR_MODEL);
+            return randomModelType_;            
         }
 
         //used for debugging

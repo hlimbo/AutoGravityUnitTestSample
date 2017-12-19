@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="PageObjects\BasePage.cs" />
     <Compile Include="PageObjects\HomePage.cs" />
+    <Compile Include="PageObjects\InventoryPage.cs" />
     <Compile Include="PageObjects\MakePage.cs" />
     <Compile Include="PageObjects\ModelPage.cs" />
     <Compile Include="UnitTest.cs" />
