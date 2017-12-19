@@ -9,7 +9,7 @@ using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Support.PageObjects;
 using AutoGravity.PageObjects;
 
-//note to self firefox is weird with the testing ~ unsure how I would override the use location setting
+
 namespace AutoGravity
 {
     [TestFixture]
@@ -130,8 +130,7 @@ namespace AutoGravity
                 Trace.TraceError(ex.Message);
             }
 
-            //6th step is to select if its Trade-in? ... select No for now and hit Next
-            //IWebElement nextButton = browser_.FindElement(By.CssSelector("button.newButton___3mgiP"));
+            //6th step Review Vehcile
             try
             {
                 IWebElement nextButton = browser_.FindElement(By.CssSelector("button.buttonNext___2w_Xa"));
@@ -147,8 +146,15 @@ namespace AutoGravity
             }
 
             //7th step is to select the first dealer available and click on 'Select This Dealer' button to continue
-            IWebElement selectThisDealerButton = browser_.FindElement(By.ClassName("dealerSelectBtn___8r46A"));
-            selectThisDealerButton.Click();
+            try
+            {
+                IWebElement selectThisDealerButton = browser_.FindElement(By.ClassName("dealerSelectBtn___8r46A"));
+                selectThisDealerButton.Click();
+            }
+            catch(NoSuchElementException ex2)
+            {
+                Trace.TraceWarning(ex2.Message);
+            }
 
             Trace.WriteLine("timeout time in seconds: " + browser_.Manage().Timeouts().ImplicitWait.Duration().TotalSeconds);
 
