@@ -5,6 +5,7 @@ using System.Device.Location;
 using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Firefox;
+using OpenQA.Selenium.Chrome;
 using System.Collections.ObjectModel;
 using AutoGravity.PageObjects;
 
@@ -16,10 +17,10 @@ namespace AutoGravity
     {
         private IWebDriver browser_;
         private GeoCoordinate coordinate_;
-        public const string HOME_PAGE = "https://www.autogravity.com";
-        public const string ZIP_CODE = "92780";
-        public const string MIN_USED_VEHICLE_PRICE = "6000";
-        public const string USED_ODOMETER_VALUE = "1";
+        private const string HOME_PAGE = "https://www.autogravity.com";
+        private const string ZIP_CODE = "92780";
+        private const string MIN_USED_VEHICLE_PRICE = "6000";
+        private const string USED_ODOMETER_VALUE = "1";
 
         //source: https://msdn.microsoft.com/en-us/library/ctssatww(v=vs.110).aspx
         private Random rng_;
@@ -36,7 +37,7 @@ namespace AutoGravity
             rng_ = new Random();
 
             //debugging errors and exceptions that get caught (e.g. NoSuchElementException)
-            //Errors.log should be found in bin/Debug folder
+            //Info.log should be found in bin/Debug folder
             Trace.Listeners.Add(new TextWriterTraceListener("Info.log", "myListener"));
 
             FirefoxOptions options = new FirefoxOptions();
@@ -55,7 +56,7 @@ namespace AutoGravity
 
             Trace.WriteLine("---------");
             browser_ = new FirefoxDriver(options);
-            browser_.Manage().Timeouts().ImplicitWait = System.TimeSpan.FromSeconds(TIMEOUT);
+            browser_.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(TIMEOUT);
         }
 
         [OneTimeTearDown]
@@ -83,7 +84,6 @@ namespace AutoGravity
 
             //2nd step is to randomly "Select Make" ~ select new for now
             string newUsedText = "";
-            //TODO: work on creating credit applications for used cars as well.
             try
             {
                 MakePage makePage = new MakePage(rng_, browser_);
@@ -132,6 +132,9 @@ namespace AutoGravity
                 {
                     Trace.WriteLine("Location Modal is Displayed");
                     location.UseMyLocationButton.Click();
+                    //alternate way of inputting location information
+                    //location.LocationInputField.SendKeys(ZIP_CODE);
+                    //location.FindLocationButton.Click();
                 }
             }
             catch(Exception ex)
