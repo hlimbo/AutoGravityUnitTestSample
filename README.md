@@ -1,11 +1,11 @@
 # AutoGravityUnitTestSample
 AutoGravity Coding Challenge
 
-Utilizes Selenium with C# Bindings and NUnit, which is a unit testing framework for C#
-Automation was tested using the FireFox Driver
+* Utilizes Selenium with C# Bindings and NUnit, which is a unit testing framework for C#
+* Automation was tested using the FireFox Driver
 
-Code automates the task of creating a credit application on https://www.autogravity.com
-The automation randomly selects the following while creating the application:
+* Code automates the task of creating a credit application on https://www.autogravity.com
+* The automation randomly selects the following while creating the application:
   1. new/used option
   2. car make
   3. car model
