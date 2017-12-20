@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Threading;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Device.Location;
 using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Firefox;
-using OpenQA.Selenium.Support.PageObjects;
+using System.Collections.ObjectModel;
 using AutoGravity.PageObjects;
 
 
 namespace AutoGravity
 {
+
     [TestFixture]
     public class UnitTest
     {
@@ -79,20 +79,24 @@ namespace AutoGravity
             catch(Exception ex)
             {
                 Trace.TraceError(ex.Message);
+                Assert.Fail("Fail at Home page");
             }
 
-            //2nd step is to randomly "Select Make"...
+            //2nd step is to randomly "Select Make" ~ select new for now
             try
             {
                 MakePage makePage = new MakePage(rng_, browser_);
                 Trace.WriteLine("MakesCollection Count: " + makePage.MakesCollection.Count);
                 IWebElement randomMakeType = makePage.SelectRandomMakeType();
+                //IWebElement randomMakeType = makePage.SelectFirstMakeType();
                 Trace.WriteLine("Make Type Selected: " + makePage.RandomMakeTypeTitle);
+                Trace.WriteLine("class=" + randomMakeType.GetAttribute("class"));
                 randomMakeType.Click();
             }
             catch(Exception ex)
             {
                 Trace.TraceError(ex.Message);
+                Assert.Fail("Fail at Select Make page");
             }
 
             try
@@ -101,12 +105,12 @@ namespace AutoGravity
                 ModelPage modelPage = new ModelPage(rng_, browser_);
                 Trace.WriteLine("ModelsCollection Count: " + modelPage.ModelsCollection.Count);
                 IWebElement randomModelType = modelPage.SelectRandomModelType();
+                //IWebElement randomModelType = modelPage.SelectFirstModelType();
                 Trace.WriteLine("Car Model Selected: " + modelPage.RandomModelTypeTitle);
                 randomModelType.Click();
 
-                //4th step is to Enter Location
-                //check if location modal pops up in webpage ~ stalls if modelPage cannot be found in current webpage
-                if (modelPage.LocationModalContent.Displayed && modelPage.LocationModalContent.Enabled)
+                //4th step
+                if (!modelPage.IsLocationSpecified)
                 {
                     Trace.WriteLine("Location Modal is Displayed");
                     modelPage.UseMyLocationButton.Click();
@@ -115,54 +119,98 @@ namespace AutoGravity
             catch(Exception ex)
             {
                 Trace.TraceError(ex.Message);
+                Assert.Fail("Fail at Model Selection page");
             }
 
             //5th step determine if the new page has a inventory list or a trim list
+            bool wasTrimPageVisited = false;
             try
             {
-                InventoryPage inventoryPage = new InventoryPage(rng_, browser_);
-                IWebElement inventoryCard = inventoryPage.SelectRandomInventoryCard();
-                Trace.WriteLine("Inventory selected: " + inventoryPage.InventoryCardTitle());
-                inventoryCard.Click();
+                PageSelector pageSelector = new PageSelector(rng_,browser_);
+                BasePage newPage = pageSelector.GetNewPage();
+
+                if (newPage is TrimPage)
+                {
+                    TrimPage trimPage = (TrimPage)newPage;
+                    IWebElement trimCard = trimPage.SelectRandomTrimCard();
+                    Trace.WriteLine("Trim selected: " + trimPage.TrimCardTitle());
+                    trimCard.Click();
+                    wasTrimPageVisited = true;
+                }
+                else if(newPage is InventoryPage)
+                {
+                    InventoryPage inventoryPage = (InventoryPage)newPage;
+                    IWebElement inventoryCard = inventoryPage.SelectRandomInventoryCard();
+                    Trace.WriteLine("Inventory selected: " + inventoryPage.InventoryCardTitle.Text);
+                    string dealerName = inventoryPage.DealerName.Text;
+                    inventoryCard.Click();
+
+                    //Review Vehicle Page
+                    ReviewVehiclePage reviewVehiclePage = new ReviewVehiclePage(browser_);
+                    Trace.WriteLine("Dealership Name: " + reviewVehiclePage.DealerName.Text);
+                    Assert.AreEqual(dealerName, reviewVehiclePage.DealerName.Text);
+                    reviewVehiclePage.NextButton.Click();
+                }
             }
             catch(Exception ex)
             {
                 Trace.TraceError(ex.Message);
+                Assert.Fail("Fail at PageSelector");
             }
 
-            //6th step Review Vehcile
+            //6th step
             try
             {
-                IWebElement nextButton = browser_.FindElement(By.CssSelector("button.buttonNext___2w_Xa"));
-                nextButton.Click();
-                IWebElement nextButton2 = browser_.FindElement(By.CssSelector("button.newButton___3mgiP"));
-                nextButton2.Submit();
+                //TODO: randomly select a finance option (e.g. loan or lease) if both options are available
+                //TODO: fill out trade-in option if yes ... for now trade-in option will be no
+                ReviewDetailsPage reviewDetailsPage = new ReviewDetailsPage(browser_);
+                reviewDetailsPage.NoTradeInButton.Click();
+                reviewDetailsPage.NextButton.Click();
             }
-            catch(NoSuchElementException ex2)
+            catch(Exception ex)
             {
-                Trace.TraceWarning(ex2.Message);
-                IWebElement nextButton2 = browser_.FindElement(By.CssSelector("button.newButton___3mgiP"));
-                nextButton2.Submit();
+                Trace.TraceError(ex.Message);
+                Assert.Fail("Fail at Review Details page");
             }
 
-            //7th step is to select the first dealer available and click on 'Select This Dealer' button to continue
-            try
+            //7th step ~ pick a random dealership if TrimPage was visited instead of inventory page
+            if (wasTrimPageVisited)
             {
-                IWebElement selectThisDealerButton = browser_.FindElement(By.ClassName("dealerSelectBtn___8r46A"));
-                selectThisDealerButton.Click();
-            }
-            catch(NoSuchElementException ex2)
-            {
-                Trace.TraceWarning(ex2.Message);
-            }
+                try
+                {
+                    DealershipPage dealershipPage = new DealershipPage(rng_, browser_);
+                    dealershipPage.SelectRandomDealer();
+                    Trace.WriteLine("Dealership name selected: " + dealershipPage.DealerName.Text);
+                    
+                    if (!dealershipPage.SelectDealerButton.Displayed)
+                        dealershipPage.ToggleDropdown.Click();
 
-            Trace.WriteLine("timeout time in seconds: " + browser_.Manage().Timeouts().ImplicitWait.Duration().TotalSeconds);
+                    foreach(IWebElement button in dealershipPage.DealerButtons)
+                        Trace.WriteLine("display: " + button.Displayed);
+
+                    dealershipPage.SelectDealerButton.Click();
+                }
+                catch(Exception ex)
+                {
+                    Trace.WriteLine(ex.Message);
+                    Assert.Fail("Fail at Dealership Page");
+                }
+            }
 
             //8th step is to stop at "Search For Financing" Personal Information Page
-            IWebElement personalInfoText = browser_.FindElement(By.CssSelector("h4.title"));
-            Assert.AreEqual("Personal Information", personalInfoText.Text);
-            Trace.WriteLine("Test Succeeded!");
+            try
+            {
+                PersonalInformationPage personalInfoPage = new PersonalInformationPage(browser_);
+                Assert.AreEqual("Personal Information", personalInfoPage.PersonalInformation.Text);
+                Trace.WriteLine("Test Succeeded!");
 
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+                Trace.WriteLine("Test Failed!");
+                Assert.Fail("Fail at Personal Information page");
+            }
         }
     }
 }

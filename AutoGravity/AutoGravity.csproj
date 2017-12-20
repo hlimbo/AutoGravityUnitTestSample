@@ -55,10 +55,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PageObjects\BasePage.cs" />
+    <Compile Include="PageObjects\DealershipPage.cs" />
+    <Compile Include="PageObjects\PageSelector.cs" />
     <Compile Include="PageObjects\HomePage.cs" />
     <Compile Include="PageObjects\InventoryPage.cs" />
     <Compile Include="PageObjects\MakePage.cs" />
     <Compile Include="PageObjects\ModelPage.cs" />
+    <Compile Include="PageObjects\PersonalInformationPage.cs" />
+    <Compile Include="PageObjects\ReviewDetailsPage.cs" />
+    <Compile Include="PageObjects\ReviewVehiclePage.cs" />
+    <Compile Include="PageObjects\TrimPage.cs" />
     <Compile Include="UnitTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

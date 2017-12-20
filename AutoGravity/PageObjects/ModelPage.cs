@@ -11,7 +11,11 @@ namespace AutoGravity.PageObjects
         private const string INPUT = "input___26qtV";
         private const string FIND_BUTTON = "blueButton___3S9-a";
         private const string GEO_BUTTON = "geoButton___1PU6W";
-        private const string LOC_MODAL = "locationModalContent___3yPhK";
+        //private const string LOC_MODAL = "locationModalContent___3yPhK";
+        private const string LOC_TEXT_SELECTOR = "span.zipCode___1l6tm";
+
+        //use this string to see if location is already set
+        private const string NA = "N/A";
         private Random rng_;//reference obtained from UnitTest
         private IWebElement randomModelType_;
 
@@ -20,8 +24,12 @@ namespace AutoGravity.PageObjects
             rng_ = rng;
         }
 
-        [FindsBy(How = How.ClassName, Using = LOC_MODAL)]
-        public IWebElement LocationModalContent { get; set; } //used to check if this location modal pops up
+        [FindsBy(How = How.CssSelector, Using = LOC_TEXT_SELECTOR)]
+        public IWebElement LocationText { get; set; }
+        public bool IsLocationSpecified
+        {
+            get { return !LocationText.Text.Equals(NA); }
+        }
 
         [FindsBy(How = How.ClassName, Using = INPUT)]
         public IWebElement LocationInputField { get; set; }
@@ -39,12 +47,17 @@ namespace AutoGravity.PageObjects
             get { return ModelsCollection.Count > 0; }
         }
 
-        //picks a random car model everytime this property is accessed
         public IWebElement SelectRandomModelType()
         {
             randomModelType_ = HasModelsCollection ? ModelsCollection[rng_.Next(ModelsCollection.Count)] : null;
             if (randomModelType_ == null) throw new NoSuchElementException("SelectRandomModelType() invalid class name: " + CAR_MODEL);
             return randomModelType_;            
+        }
+        public IWebElement SelectFirstModelType()
+        {
+            randomModelType_ = HasModelsCollection ? ModelsCollection[0] : null;
+            if (randomModelType_ == null) throw new NoSuchElementException("SelectFirstModelType() invalid class name: " + CAR_MODEL);
+            return randomModelType_;
         }
 
         //used for debugging

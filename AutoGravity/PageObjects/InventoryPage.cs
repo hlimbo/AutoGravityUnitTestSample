@@ -8,9 +8,9 @@ namespace AutoGravity.PageObjects
     class InventoryPage : BasePage
     {
         private const string INV_CLASS = "InventoryCard___iUPv5";
-        private const string INV_CLASS_ALT = "trimListRow___3xZy7";
         private const string CAR_NAME = "h1___3eE95";
-        private const string CAR_NAME_ALT = "trimName___9if8r";
+        private const string DEALER_NAME = "dealerName___1fYRu";
+
         private Random rng_;
         private IWebElement randomInventoryCard_;
 
@@ -19,8 +19,7 @@ namespace AutoGravity.PageObjects
             rng_ = rng;
         }
 
-        [FindsBy(How = How.ClassName, Using = INV_CLASS, Priority = 0)]
-        [FindsBy(How = How.ClassName, Using = INV_CLASS_ALT, Priority = 1)]
+        [FindsBy(How = How.ClassName, Using = INV_CLASS)]
         public IList<IWebElement> InventoryCards { get; set; }
         public bool HasInventoryCards
         {
@@ -30,7 +29,7 @@ namespace AutoGravity.PageObjects
         public IWebElement SelectRandomInventoryCard()
         {
             randomInventoryCard_ = HasInventoryCards ? InventoryCards[rng_.Next(InventoryCards.Count)] : null;
-            if (randomInventoryCard_ == null) throw new NoSuchElementException("SelectRandomInventoryCard() invalid class name: " + INV_CLASS_ALT);
+            if (randomInventoryCard_ == null) throw new NoSuchElementException("SelectRandomInventoryCard() invalid class name: " + INV_CLASS);
             return randomInventoryCard_;
         }
 
@@ -39,36 +38,43 @@ namespace AutoGravity.PageObjects
             if (HasInventoryCards)
                 randomInventoryCard_ = InventoryCards[0];
             else
-                throw new NoSuchElementException("SelectRandomInventoryCard() invalid class name: " + INV_CLASS_ALT);
+                throw new NoSuchElementException("SelectFirstInventoryCard() invalid class name: " + INV_CLASS);
 
             return randomInventoryCard_;
         }
 
         //used for debugging:
-        public string InventoryCardTitle()
+        public IWebElement InventoryCardTitle
         {
-            if (randomInventoryCard_ == null) throw new NoSuchElementException("InventoryCardTitle() invalid class name: " + INV_CLASS_ALT);
-            string inventoryCardName = "null";
-
-            try
+            get
             {
-                inventoryCardName = randomInventoryCard_.FindElement(By.ClassName(CAR_NAME)).Text;
-            }
-            catch(NoSuchElementException)
-            {
+                if (randomInventoryCard_ == null) throw new NoSuchElementException("InventoryCardTitle invalid class name: " + INV_CLASS);
                 try
                 {
-                    inventoryCardName = randomInventoryCard_.FindElement(By.ClassName(CAR_NAME_ALT)).Text;
+                    return randomInventoryCard_.FindElement(By.ClassName(CAR_NAME));
+                }
+                catch (NoSuchElementException)
+                {
+                    throw new NoSuchElementException("InventoryCardTitle invalid class name: " + CAR_NAME);
+                }
+            }
+        }
+
+        public IWebElement DealerName
+        {
+            get
+            {
+                if (randomInventoryCard_ == null) throw new NoSuchElementException("DealerName invalid class name: " + INV_CLASS);
+                try
+                {
+                    return randomInventoryCard_.FindElement(By.ClassName(DEALER_NAME));
                 }
                 catch(NoSuchElementException)
                 {
-                    throw new NoSuchElementException("InventoryCardTitle() invalid class name: " + CAR_NAME_ALT);
+                    throw new NoSuchElementException("DealerName invalid class name: " + DEALER_NAME);
                 }
             }
-
-             return inventoryCardName;
         }
-
 
     }
 }

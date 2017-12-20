@@ -32,7 +32,14 @@ namespace AutoGravity.PageObjects
         public IWebElement SelectRandomMakeType()
         {
             randomMakeType_ = HasMakeCollection ? MakesCollection[rng_.Next(MakesCollection.Count)] : null;
-            if (randomMakeType_ == null) throw new NoSuchElementException("SelectRandomMakeType invalid class name: " + CLASS_NAME);
+            if (randomMakeType_ == null) throw new NoSuchElementException("SelectRandomMakeType() invalid class name: " + CLASS_NAME);
+            return randomMakeType_;
+        }
+
+        public IWebElement SelectFirstMakeType()
+        {
+            randomMakeType_ = HasMakeCollection ? MakesCollection[0] : null;
+            if (randomMakeType_ == null) throw new NoSuchElementException("SelectFirstMakeType() invalid class name: " + CLASS_NAME);
             return randomMakeType_;
         }
 
