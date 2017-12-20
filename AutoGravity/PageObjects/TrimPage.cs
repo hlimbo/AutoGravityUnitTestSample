@@ -32,21 +32,20 @@ namespace AutoGravity.PageObjects
         }
 
         //used for debugging
-        public string TrimCardTitle()
+        public IWebElement TrimCardTitle
         {
-            if (randomTrimCard_ == null) throw new NoSuchElementException("TrimCardTitle() invalid class name: " + TRIM_CLASS);
-            string trimCardName = "null";
-
-            try
+            get
             {
-                trimCardName = randomTrimCard_.FindElement(By.ClassName(CAR_NAME)).Text;
+                if (randomTrimCard_ == null) throw new NoSuchElementException("TrimCardTitle invalid class name: " + TRIM_CLASS);
+                try
+                {
+                    return randomTrimCard_.FindElement(By.ClassName(CAR_NAME));
+                }
+                catch (NoSuchElementException)
+                {
+                    throw new NoSuchElementException("TrimCardTitle invalid class name: " + CAR_NAME);
+                }
             }
-            catch(NoSuchElementException)
-            {
-                throw new NoSuchElementException("TrimCardTitle() invalid class name: " + CAR_NAME);
-            }
-
-            return trimCardName;
         }
 
 

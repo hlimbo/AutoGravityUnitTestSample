@@ -133,7 +133,7 @@ namespace AutoGravity
                 {
                     TrimPage trimPage = (TrimPage)newPage;
                     IWebElement trimCard = trimPage.SelectRandomTrimCard();
-                    Trace.WriteLine("Trim selected: " + trimPage.TrimCardTitle());
+                    Trace.WriteLine("Trim selected: " + trimPage.TrimCardTitle.Text);
                     trimCard.Click();
                     wasTrimPageVisited = true;
                 }
@@ -161,9 +161,11 @@ namespace AutoGravity
             //6th step
             try
             {
-                //TODO: randomly select a finance option (e.g. loan or lease) if both options are available
                 //TODO: fill out trade-in option if yes ... for now trade-in option will be no
-                ReviewDetailsPage reviewDetailsPage = new ReviewDetailsPage(browser_);
+                ReviewDetailsPage reviewDetailsPage = new ReviewDetailsPage(rng_,browser_);
+                Trace.WriteLine("Finance Toggle Count: " + reviewDetailsPage.FinanceToggles.Count);
+                reviewDetailsPage.SelectRandomFinanceToggle().Click();
+                Trace.WriteLine("finance type: " + reviewDetailsPage.FinanceType.Text);
                 reviewDetailsPage.NoTradeInButton.Click();
                 reviewDetailsPage.NextButton.Click();
             }
