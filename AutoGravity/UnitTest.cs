@@ -37,7 +37,7 @@ namespace AutoGravity
 
             //debugging errors and exceptions that get caught (e.g. NoSuchElementException)
             //Errors.log should be found in bin/Debug folder
-            Trace.Listeners.Add(new TextWriterTraceListener("Errors.log", "myListener"));
+            Trace.Listeners.Add(new TextWriterTraceListener("Info.log", "myListener"));
 
             FirefoxOptions options = new FirefoxOptions();
             //automatically allow consent to share location
