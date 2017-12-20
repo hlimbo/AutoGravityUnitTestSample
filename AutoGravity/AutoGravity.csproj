@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="PageObjects\BasePage.cs" />
     <Compile Include="PageObjects\DealershipPage.cs" />
+    <Compile Include="PageObjects\LocationPage.cs" />
     <Compile Include="PageObjects\PageSelector.cs" />
     <Compile Include="PageObjects\HomePage.cs" />
     <Compile Include="PageObjects\InventoryPage.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="PageObjects\ReviewDetailsPage.cs" />
     <Compile Include="PageObjects\ReviewVehiclePage.cs" />
     <Compile Include="PageObjects\TrimPage.cs" />
+    <Compile Include="PageObjects\UsedPage.cs" />
     <Compile Include="UnitTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

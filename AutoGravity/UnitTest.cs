@@ -11,7 +11,6 @@ using AutoGravity.PageObjects;
 
 namespace AutoGravity
 {
-
     [TestFixture]
     public class UnitTest
     {
@@ -19,6 +18,8 @@ namespace AutoGravity
         private GeoCoordinate coordinate_;
         public const string HOME_PAGE = "https://www.autogravity.com";
         public const string ZIP_CODE = "92780";
+        public const string MIN_USED_VEHICLE_PRICE = "6000";
+        public const string USED_ODOMETER_VALUE = "1";
 
         //source: https://msdn.microsoft.com/en-us/library/ctssatww(v=vs.110).aspx
         private Random rng_;
@@ -49,11 +50,10 @@ namespace AutoGravity
             //default to Irvine location if current location not found
             coordinate_ = (watcher.Position.Location.IsUnknown) ? new GeoCoordinate(33.684567, -117.826505) : watcher.Position.Location;
             string format = "data:application/json,{\"location\": {\"lat\": " + coordinate_.Latitude + ", \"lng\": " + coordinate_.Longitude + "}, \"accuracy\": 100.0}";
-            Trace.WriteLine("watcher: " + watcher.Position.Location);
-            Trace.WriteLine(format);
             options.SetPreference("geo.wifi.uri", format);
             watcher.Dispose();
 
+            Trace.WriteLine("---------");
             browser_ = new FirefoxDriver(options);
             browser_.Manage().Timeouts().ImplicitWait = System.TimeSpan.FromSeconds(TIMEOUT);
         }
@@ -69,35 +69,32 @@ namespace AutoGravity
         public void Create_Credit_App_Firefox()
         {
             browser_.Navigate().GoToUrl(HOME_PAGE);
-
             //1st step is to select get started button
             try
             {
                 HomePage homePage = new HomePage(browser_);
                 homePage.GetStartedButton.Click();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Trace.TraceError(ex.Message);
                 Assert.Fail("Fail at Home page");
             }
 
             //2nd step is to randomly "Select Make" ~ select new for now
-            //string newUsedText = null;
+            string newUsedText = "";
             //TODO: work on creating credit applications for used cars as well.
             try
             {
                 MakePage makePage = new MakePage(rng_, browser_);
 
                 IWebElement randomButton = makePage.SelectRandomNewUsedButton();
-                //randomButton.Click();
-                //newUsedText = randomButton.Text;
-                //Trace.WriteLine("New/Used: " + randomButton.Text);
+                randomButton.Click();
+                newUsedText = randomButton.Text;
+                Trace.WriteLine("New/Used: " + randomButton.Text);
                 Trace.WriteLine("MakesCollection Count: " + makePage.MakesCollection.Count);
                 IWebElement randomMakeType = makePage.SelectRandomMakeType();
-                //IWebElement randomMakeType = makePage.SelectFirstMakeType();
                 Trace.WriteLine("Make Type Selected: " + makePage.RandomMakeTypeTitle);
-                Trace.WriteLine("class=" + randomMakeType.GetAttribute("class"));
                 randomMakeType.Click();
             }
             catch(Exception ex)
@@ -109,20 +106,32 @@ namespace AutoGravity
             try
             {
                 //3rd step is to randomly select a car
-                ModelPage modelPage = new ModelPage(rng_, browser_);
-                Trace.WriteLine("ModelsCollection Count: " + modelPage.ModelsCollection.Count);
-                IWebElement randomModelType = modelPage.SelectRandomModelType();
-                //IWebElement randomModelType = modelPage.SelectFirstModelType();
-                Trace.WriteLine("Car Model Selected: " + modelPage.RandomModelTypeTitle);
-                randomModelType.Click();
+                PageSelector modelPageSelector = new PageSelector(rng_, browser_);
+                BasePage nextPage = modelPageSelector.GetNewOrUsedModelPage(newUsedText);
+
+                if(nextPage is ModelPage)
+                {
+                    ModelPage modelPage = (ModelPage)nextPage;
+                    Trace.WriteLine("ModelsCollection Count: " + modelPage.ModelsCollection.Count);
+                    IWebElement randomModelType = modelPage.SelectRandomModelType();
+                    Trace.WriteLine("Car Model Selected: " + modelPage.RandomModelTypeTitle);
+                    randomModelType.Click();
+                }
+                else if(nextPage is UsedPage)
+                {
+                    UsedPage usedModelPage = (UsedPage)nextPage;
+                    Trace.WriteLine("Used ModelsCollection Count: " + usedModelPage.UsedCollection.Count);
+                    IWebElement randomUsedModelType = usedModelPage.SelectRandomUsedItem();
+                    Trace.WriteLine("Used Car Model Selected: " + randomUsedModelType.Text);
+                    randomUsedModelType.Click();
+                }
 
                 //4th step
-                if (!modelPage.IsLocationSpecified)
+                LocationPage location = new LocationPage(browser_);
+                if(!location.IsLocationSpecified)
                 {
                     Trace.WriteLine("Location Modal is Displayed");
-                    //modelPage.LocationInputField.SendKeys(ZIP_CODE);
-                    //modelPage.FindLocationButton.Click();
-                    modelPage.UseMyLocationButton.Click();
+                    location.UseMyLocationButton.Click();
                 }
             }
             catch(Exception ex)
@@ -160,6 +169,19 @@ namespace AutoGravity
                     Assert.AreEqual(dealerName, reviewVehiclePage.DealerName.Text);
                     reviewVehiclePage.NextButton.Click();
                 }
+                else if(newPage is UsedPage)
+                {
+                    UsedPage usedYearPage = new UsedPage(rng_, browser_);
+                    IWebElement yearElement = usedYearPage.SelectRandomUsedItem();
+                    Trace.WriteLine("Used Year: " + yearElement.Text);
+                    yearElement.Click();
+
+                    UsedPage usedTrimPage = new UsedPage(rng_, browser_);
+                    IWebElement trimElement = usedTrimPage.SelectRandomUsedItem();
+                    Trace.WriteLine("Used Trim: " + trimElement.Text);
+                    trimElement.Click();
+                    wasTrimPageVisited = true;
+                }
             }
             catch(Exception ex)
             {
@@ -167,133 +189,26 @@ namespace AutoGravity
                 Assert.Fail("Fail at PageSelector");
             }
 
-            //6th step
+            //6th step ~ no trade-in
             try
             {
-              
                 ReviewDetailsPage reviewDetailsPage = new ReviewDetailsPage(rng_,browser_);
-                Trace.WriteLine("Finance Toggle Count: " + reviewDetailsPage.FinanceToggles.Count);
-                reviewDetailsPage.SelectRandomFinanceToggle().Click();
-                Trace.WriteLine("finance type: " + reviewDetailsPage.FinanceType.Text);
 
-                //reviewDetailsPage.SelectRandomTradeInButton();
-                IWebElement tradeInOption = reviewDetailsPage.NoTradeInButton;
-                tradeInOption.Click();
-
-                //WIP ~ TRADE-IN INPUT
-                if(tradeInOption.Text.Equals("yes",StringComparison.InvariantCultureIgnoreCase))
+                if(newUsedText.Equals("used",StringComparison.InvariantCultureIgnoreCase))
                 {
-                    //TODO: fill out trade-in option if yes
-                    //loads in dropdown bar in a react div
-                    //IWebElement lastOfType = browser_.FindElement(By.CssSelector("div:last-of-type"));
-                    //Trace.WriteLine(lastOfType.GetAttribute("style"));
-                    //Trace.WriteLine("last of type text: " + lastOfType.GetAttribute("innerHTML"));
-
-
-                    //clickables
-                    //ReadOnlyCollection<IWebElement> clickables = browser_.FindElements(By.CssSelector(".fields___gvXP1 > .row > .col-xs-6 >.agSelectField___3CGi5"));
-                    //Trace.WriteLine("clickables count: " + clickables.Count);
-                    //foreach (IWebElement clickable in clickables)
-                    //{
-                    //    Trace.WriteLine(clickable.Text);
-                    //    clickable.Click();
-
-                    //    IWebElement lastOfType = browser_.FindElement(By.CssSelector("div:last-of-type"));
-                    //    IWebElement dropdown = lastOfType.FindElement(By.CssSelector("div > div > div"));
-                    //    //IWebElement dropdown = browser_.FindElement(By.XPath("//div[@role='menu']"));
-                    //    ReadOnlyCollection<IWebElement> options = dropdown.FindElements(By.TagName("span"));
-                    //    IWebElement randomSelection = options[rng_.Next(options.Count)];
-
-                    //    foreach(var option in options)
-                    //    {
-                    //        Trace.WriteLine(option.Text);
-                    //    }
-                    //    Trace.WriteLine("options count: " + options.Count);
-                    //    Trace.WriteLine(randomSelection.Text);
-                    //    randomSelection.Click();
-                    //}
-
-
-                    //make trade in dropdown
-                    IWebElement tradeInDropdown = browser_.FindElement(By.Id("tradeInMakeDropdown"));
-                    tradeInDropdown.Click();
-
-                    //IWebElement lastOfType = browser_.FindElement(By.CssSelector("div:last-of-type"));
-                    //IWebElement dropdown = lastOfType.FindElement(By.CssSelector("div > div > div"));
-                    IWebElement dropdown = browser_.FindElement(By.XPath("//div[@role='menu']"));
-                    ReadOnlyCollection<IWebElement> options = dropdown.FindElements(By.TagName("span"));
-                    Trace.WriteLine("make count: " + options.Count);
-                    foreach (IWebElement option in options)
-                    {
-                        Trace.WriteLine(option.Text);
-                    }
-
-                    //randomly select a make to trade
-                    IWebElement randomMake = options[rng_.Next(options.Count)];
-                    Trace.WriteLine("Random Make to Trade: " + randomMake.Text);
-                    randomMake.Click();
-
-                    //model trade in drop down
-                    IWebElement tradeInModelDropDown = browser_.FindElement(By.Id("tradeInModelDropdown"));
-                    tradeInModelDropDown.Click();
-
-                    //lastOfType = browser_.FindElement(By.CssSelector("div:last-of-type"));
-                    //dropdown = lastOfType.FindElement(By.CssSelector("div > div > div"));
-                    dropdown = browser_.FindElement(By.XPath("//div[@role='menu']"));//could not be found why?
-                    options = dropdown.FindElements(By.TagName("span"));
-                    Trace.WriteLine("model count: " + options.Count);
-                    foreach (IWebElement option in options)
-                        Trace.WriteLine(option.Text);
-
-                    //randomly select a model to trade
-                    IWebElement randomModel = options[rng_.Next(options.Count)];
-                    Trace.WriteLine("Random Model to Trade: " + randomModel.Text);
-                    randomModel.Click();
-
-                    ////year
-                    //IWebElement tradeInYearDropdown = browser_.FindElement(By.Id("tradeInYearDropdown"));
-                    //tradeInYearDropdown.Click();
-
-                    //lastOfType = browser_.FindElement(By.CssSelector("div:last-of-type"));
-                    //dropdown = lastOfType.FindElement(By.CssSelector("div > div > div"));
-                    ////dropdown = browser_.FindElement(By.XPath("//div[@role='menu']"));
-                    //options = dropdown.FindElements(By.TagName("span"));
-                    //Trace.WriteLine("year count: " + options.Count);
-                    //foreach (IWebElement option in options)
-                    //    Trace.WriteLine(option.Text);
-
-                    //IWebElement randomYear = options[rng_.Next(options.Count)];
-                    //Trace.WriteLine("Random Year to Trade: " + randomYear.Text);
-                    //randomYear.Click();
-
-                    ////trim
-                    //IWebElement tradeInTrimDropdown = browser_.FindElement(By.Id("tradeInTrimDropdown"));
-                    //tradeInTrimDropdown.Click();
-
-                    //lastOfType = browser_.FindElement(By.CssSelector("div:last-of-type"));
-                    //dropdown = lastOfType.FindElement(By.CssSelector("div > div > div"));
-                    ////dropdown = browser_.FindElement(By.XPath("//div[@role='menu']"));
-                    //options = dropdown.FindElements(By.TagName("span"));
-                    //Trace.WriteLine("trim count: " + options.Count);
-                    //foreach (IWebElement option in options)
-                    //    Trace.WriteLine(option.Text);
-
-                    //if (options.Count > 0) // don't always have a trim option
-                    //{
-                    //    IWebElement randomTrim = options[rng_.Next(options.Count)];
-                    //    Trace.WriteLine("Random Trim to Trade: " + randomTrim.Text);
-                    //    randomTrim.Click();
-                    //}
-
-                    //mileage
-                    IWebElement mileageInput = browser_.FindElement(By.Id("tradeInMileageInput"));
-                    mileageInput.Clear();
-                    mileageInput.SendKeys("20000");//placeholder mileage
-                    Trace.WriteLine("mileage: " + mileageInput.Text);
-
+                    reviewDetailsPage.UsedVehiclePriceInput.SendKeys(MIN_USED_VEHICLE_PRICE);
+                    reviewDetailsPage.OdomoterReadingInput.SendKeys(USED_ODOMETER_VALUE);
+                    IWebElement financeType = browser_.FindElement(By.ClassName("sectionTitleBar___1cVBK"));
+                    Trace.WriteLine("used finance type: " + financeType.Text);
+                }
+                else //new car
+                {
+                    Trace.WriteLine("Finance Toggle Count: " + reviewDetailsPage.FinanceToggles.Count);
+                    reviewDetailsPage.SelectRandomFinanceToggle().Click();
+                    Trace.WriteLine("finance type: " + reviewDetailsPage.FinanceType.Text);
                 }
 
-                //reviewDetailsPage.NoTradeInButton.Click();
+                reviewDetailsPage.NoTradeInButton.Click();
                 reviewDetailsPage.NextButton.Click();
             }
             catch(Exception ex)

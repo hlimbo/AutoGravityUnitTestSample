@@ -4,12 +4,12 @@ using OpenQA.Selenium.Support.PageObjects;
 
 namespace AutoGravity.PageObjects
 {
-    //class determines if the model selected from ModelPage 
-    //brings you to either the Trim Page or the Inventory Page
+    //class determines the next page to go to from ModelPage
     class PageSelector : BasePage
     {
         private const string TRIM_CLASS = "vehicleTrims___3EZv9";
         private const string INV_CLASS = "Inventory___b9C0J";
+        private const string USED_CLASS_PAGE = "list-group";
         private Random rng_;
 
         public PageSelector(Random rng,IWebDriver driver) : base(driver)
@@ -17,46 +17,42 @@ namespace AutoGravity.PageObjects
             rng_ = rng;
         }
 
-        //throws NoSuchElementException if page type could not be found
-        //otherwise return the page type found on success
-        private IWebElement PageType()
-        {
-            IWebElement page;
-            if (!TryToFindElement(driver_, By.ClassName(TRIM_CLASS), out page))
-            {
-                if (!TryToFindElement(driver_, By.ClassName(INV_CLASS), out page))
-                {
-                    throw new NoSuchElementException("PageType() no such class name: " + INV_CLASS);
-                }
-            }
-
-            return page;
-        }
-
         //gives the new page object to initialize  via PageFactory (e.g. Is this page an Inventory or a Trim Page?)
         public BasePage GetNewPage()
         {
-            if (PageType().GetAttribute("class").Contains(TRIM_CLASS))
+            if (DoesElementExist(driver_, By.ClassName(TRIM_CLASS)))
                 return new TrimPage(rng_, driver_);
-            else
+            if (DoesElementExist(driver_, By.ClassName(INV_CLASS)))
                 return new InventoryPage(rng_, driver_);
+            if (DoesElementExist(driver_, By.ClassName(USED_CLASS_PAGE)))
+                return new UsedPage(rng_, driver_);
+
+            throw new NoSuchElementException("GetNewPage() invalid class names");
         }
 
-        private bool TryToFindElement(IWebDriver src, By by, out IWebElement dstElement)
+        //use this class to get the next page depending on the param newUsedText
+        //newUsedText param must only either be "new" or "used"
+        public BasePage GetNewOrUsedModelPage(string newUsedText)
         {
-            bool status;
+            if (newUsedText.Equals("new", StringComparison.InvariantCultureIgnoreCase))
+                return new ModelPage(rng_, driver_);
+            if (newUsedText.Equals("used", StringComparison.InvariantCultureIgnoreCase))
+                return new UsedPage(rng_, driver_);
+
+            throw new NoSuchElementException("GetNewOrUsedModelPage() invalid newUsedText: " + newUsedText);
+        }
+
+        private bool DoesElementExist(IWebDriver src, By by)
+        {
             try
             {
-                dstElement = src.FindElement(by);
-                status = true;
+                src.FindElement(by);
+                return true;
             }
             catch (NoSuchElementException)
             {
-                dstElement = null;
-                status = false;
+                return false;
             }
-
-            return status;
         }
     }
 }

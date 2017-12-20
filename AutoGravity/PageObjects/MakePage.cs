@@ -31,6 +31,24 @@ namespace AutoGravity.PageObjects
             return NewUsedButtons[rng_.Next(NewUsedButtons.Count)];
         }
 
+        public IWebElement NewButton
+        {
+            get
+            {
+                if (!HasNewUsedButtons) throw new NoSuchElementException("NewButton invalid class: " + NEW_USED_BUTTONS_SELECTOR);
+                return NewUsedButtons[0];
+            }
+        }
+
+        public IWebElement UsedButton
+        {
+            get
+            {
+                if (!HasNewUsedButtons) throw new NoSuchElementException("UsedButton invalid class: " + NEW_USED_BUTTONS_SELECTOR);
+                return NewUsedButtons[1];
+            }
+        }
+
         [FindsBy(How = How.ClassName, Using = CLASS_NAME)]
         public  IList<IWebElement> MakesCollection{ get; set; }
 

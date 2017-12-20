@@ -13,6 +13,14 @@ namespace AutoGravity.PageObjects
         private const string FINANCE_TOGGLE_CLASS = "financeTypeToggle___1UDYQ";
         private const string FINANCE_TYPE_CLASS = "typeLabel___2rlt9";
         private const string TRADE_IN_BUTTONS_CLASS = "toggleFieldButton___3zwvQ";
+        //for used models only
+        private const string ODOMETER_READING_INPUT = "odometerReadinginput";
+        private const string USED_VEHICLE_PRICE_INPUT = "usedVehiclePriceinput";
+        private const string AMOUNT_REQUESTED_CLASS = "amountRequestedValue___2nJFN";
+        private const string MIN_AMOUNT_CLASS = "warning___2uEep";
+
+
+
         private Random rng_;
         private int index_ = -1;
         private IWebElement randomFinanceToggle_;
@@ -22,6 +30,18 @@ namespace AutoGravity.PageObjects
         {
             rng_ = rng;
         }
+
+        [FindsBy(How = How.Id, Using = ODOMETER_READING_INPUT)]
+        public IWebElement OdomoterReadingInput { get; set; }
+
+        [FindsBy(How = How.Id, Using = USED_VEHICLE_PRICE_INPUT)]
+        public IWebElement UsedVehiclePriceInput { get; set; }
+
+        [FindsBy(How = How.ClassName, Using = AMOUNT_REQUESTED_CLASS)]
+        public IWebElement AmountRequested { get; set; }
+
+        [FindsBy(How = How.ClassName, Using = MIN_AMOUNT_CLASS)]
+        public IWebElement MinAmount { get; set; }
 
         [FindsBy(How = How.ClassName, Using = BUTTON_CLASS)]
         public IWebElement NextButton { get; set; }
