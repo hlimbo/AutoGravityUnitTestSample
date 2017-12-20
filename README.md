@@ -18,7 +18,7 @@
 1. using the command line (e.g. git bash) enter in the following:
 `git clone "https://github.com/hlimbo/AutoGravityUnitTestSample.git`
 
-Instructions to run test:
+## Instructions to run test:
 1. Open Visual Studio Project
 2. Click on Test -> Windows -> Test Explorer to view the Test Explorer pane
 3. With the Test Explorer pane opened, right click on `Create_Credit_App_Firefox` to run test
