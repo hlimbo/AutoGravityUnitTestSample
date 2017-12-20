@@ -82,7 +82,7 @@ namespace AutoGravity
                 Assert.Fail("Fail at Home page");
             }
 
-            //2nd step is to randomly "Select Make" ~ select new for now
+            //2nd step is to randomly "Select Make" 
             string newUsedText = "";
             try
             {
