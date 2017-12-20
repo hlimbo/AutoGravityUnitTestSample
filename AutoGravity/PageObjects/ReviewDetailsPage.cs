@@ -16,6 +16,7 @@ namespace AutoGravity.PageObjects
         private Random rng_;
         private int index_ = -1;
         private IWebElement randomFinanceToggle_;
+        private IWebElement randomTradeInButton_;
 
         public ReviewDetailsPage(Random rng, IWebDriver driver) : base(driver)
         {
@@ -65,7 +66,14 @@ namespace AutoGravity.PageObjects
             get { return TradeInButtons.Count > 0; }
         }
 
-        public IWebElement TradeInButton
+        public IWebElement SelectRandomTradeInButton()
+        {
+            if (!HasTradeInButtons) throw new NoSuchElementException("SelectRandomTradeInButton() invalid class: " + TRADE_IN_BUTTONS_CLASS);
+            randomTradeInButton_ = TradeInButtons[rng_.Next(TradeInButtons.Count)];
+            return randomTradeInButton_;
+        }
+
+        public IWebElement YesTradeInButton
         {
             get
             {

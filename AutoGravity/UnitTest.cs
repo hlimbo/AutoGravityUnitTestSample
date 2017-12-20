@@ -83,9 +83,16 @@ namespace AutoGravity
             }
 
             //2nd step is to randomly "Select Make" ~ select new for now
+            //string newUsedText = null;
+            //TODO: work on creating credit applications for used cars as well.
             try
             {
                 MakePage makePage = new MakePage(rng_, browser_);
+
+                IWebElement randomButton = makePage.SelectRandomNewUsedButton();
+                //randomButton.Click();
+                //newUsedText = randomButton.Text;
+                //Trace.WriteLine("New/Used: " + randomButton.Text);
                 Trace.WriteLine("MakesCollection Count: " + makePage.MakesCollection.Count);
                 IWebElement randomMakeType = makePage.SelectRandomMakeType();
                 //IWebElement randomMakeType = makePage.SelectFirstMakeType();
@@ -113,6 +120,8 @@ namespace AutoGravity
                 if (!modelPage.IsLocationSpecified)
                 {
                     Trace.WriteLine("Location Modal is Displayed");
+                    //modelPage.LocationInputField.SendKeys(ZIP_CODE);
+                    //modelPage.FindLocationButton.Click();
                     modelPage.UseMyLocationButton.Click();
                 }
             }
@@ -161,12 +170,130 @@ namespace AutoGravity
             //6th step
             try
             {
-                //TODO: fill out trade-in option if yes ... for now trade-in option will be no
+              
                 ReviewDetailsPage reviewDetailsPage = new ReviewDetailsPage(rng_,browser_);
                 Trace.WriteLine("Finance Toggle Count: " + reviewDetailsPage.FinanceToggles.Count);
                 reviewDetailsPage.SelectRandomFinanceToggle().Click();
                 Trace.WriteLine("finance type: " + reviewDetailsPage.FinanceType.Text);
-                reviewDetailsPage.NoTradeInButton.Click();
+
+                //reviewDetailsPage.SelectRandomTradeInButton();
+                IWebElement tradeInOption = reviewDetailsPage.NoTradeInButton;
+                tradeInOption.Click();
+
+                //WIP ~ TRADE-IN INPUT
+                if(tradeInOption.Text.Equals("yes",StringComparison.InvariantCultureIgnoreCase))
+                {
+                    //TODO: fill out trade-in option if yes
+                    //loads in dropdown bar in a react div
+                    //IWebElement lastOfType = browser_.FindElement(By.CssSelector("div:last-of-type"));
+                    //Trace.WriteLine(lastOfType.GetAttribute("style"));
+                    //Trace.WriteLine("last of type text: " + lastOfType.GetAttribute("innerHTML"));
+
+
+                    //clickables
+                    //ReadOnlyCollection<IWebElement> clickables = browser_.FindElements(By.CssSelector(".fields___gvXP1 > .row > .col-xs-6 >.agSelectField___3CGi5"));
+                    //Trace.WriteLine("clickables count: " + clickables.Count);
+                    //foreach (IWebElement clickable in clickables)
+                    //{
+                    //    Trace.WriteLine(clickable.Text);
+                    //    clickable.Click();
+
+                    //    IWebElement lastOfType = browser_.FindElement(By.CssSelector("div:last-of-type"));
+                    //    IWebElement dropdown = lastOfType.FindElement(By.CssSelector("div > div > div"));
+                    //    //IWebElement dropdown = browser_.FindElement(By.XPath("//div[@role='menu']"));
+                    //    ReadOnlyCollection<IWebElement> options = dropdown.FindElements(By.TagName("span"));
+                    //    IWebElement randomSelection = options[rng_.Next(options.Count)];
+
+                    //    foreach(var option in options)
+                    //    {
+                    //        Trace.WriteLine(option.Text);
+                    //    }
+                    //    Trace.WriteLine("options count: " + options.Count);
+                    //    Trace.WriteLine(randomSelection.Text);
+                    //    randomSelection.Click();
+                    //}
+
+
+                    //make trade in dropdown
+                    IWebElement tradeInDropdown = browser_.FindElement(By.Id("tradeInMakeDropdown"));
+                    tradeInDropdown.Click();
+
+                    //IWebElement lastOfType = browser_.FindElement(By.CssSelector("div:last-of-type"));
+                    //IWebElement dropdown = lastOfType.FindElement(By.CssSelector("div > div > div"));
+                    IWebElement dropdown = browser_.FindElement(By.XPath("//div[@role='menu']"));
+                    ReadOnlyCollection<IWebElement> options = dropdown.FindElements(By.TagName("span"));
+                    Trace.WriteLine("make count: " + options.Count);
+                    foreach (IWebElement option in options)
+                    {
+                        Trace.WriteLine(option.Text);
+                    }
+
+                    //randomly select a make to trade
+                    IWebElement randomMake = options[rng_.Next(options.Count)];
+                    Trace.WriteLine("Random Make to Trade: " + randomMake.Text);
+                    randomMake.Click();
+
+                    //model trade in drop down
+                    IWebElement tradeInModelDropDown = browser_.FindElement(By.Id("tradeInModelDropdown"));
+                    tradeInModelDropDown.Click();
+
+                    //lastOfType = browser_.FindElement(By.CssSelector("div:last-of-type"));
+                    //dropdown = lastOfType.FindElement(By.CssSelector("div > div > div"));
+                    dropdown = browser_.FindElement(By.XPath("//div[@role='menu']"));//could not be found why?
+                    options = dropdown.FindElements(By.TagName("span"));
+                    Trace.WriteLine("model count: " + options.Count);
+                    foreach (IWebElement option in options)
+                        Trace.WriteLine(option.Text);
+
+                    //randomly select a model to trade
+                    IWebElement randomModel = options[rng_.Next(options.Count)];
+                    Trace.WriteLine("Random Model to Trade: " + randomModel.Text);
+                    randomModel.Click();
+
+                    ////year
+                    //IWebElement tradeInYearDropdown = browser_.FindElement(By.Id("tradeInYearDropdown"));
+                    //tradeInYearDropdown.Click();
+
+                    //lastOfType = browser_.FindElement(By.CssSelector("div:last-of-type"));
+                    //dropdown = lastOfType.FindElement(By.CssSelector("div > div > div"));
+                    ////dropdown = browser_.FindElement(By.XPath("//div[@role='menu']"));
+                    //options = dropdown.FindElements(By.TagName("span"));
+                    //Trace.WriteLine("year count: " + options.Count);
+                    //foreach (IWebElement option in options)
+                    //    Trace.WriteLine(option.Text);
+
+                    //IWebElement randomYear = options[rng_.Next(options.Count)];
+                    //Trace.WriteLine("Random Year to Trade: " + randomYear.Text);
+                    //randomYear.Click();
+
+                    ////trim
+                    //IWebElement tradeInTrimDropdown = browser_.FindElement(By.Id("tradeInTrimDropdown"));
+                    //tradeInTrimDropdown.Click();
+
+                    //lastOfType = browser_.FindElement(By.CssSelector("div:last-of-type"));
+                    //dropdown = lastOfType.FindElement(By.CssSelector("div > div > div"));
+                    ////dropdown = browser_.FindElement(By.XPath("//div[@role='menu']"));
+                    //options = dropdown.FindElements(By.TagName("span"));
+                    //Trace.WriteLine("trim count: " + options.Count);
+                    //foreach (IWebElement option in options)
+                    //    Trace.WriteLine(option.Text);
+
+                    //if (options.Count > 0) // don't always have a trim option
+                    //{
+                    //    IWebElement randomTrim = options[rng_.Next(options.Count)];
+                    //    Trace.WriteLine("Random Trim to Trade: " + randomTrim.Text);
+                    //    randomTrim.Click();
+                    //}
+
+                    //mileage
+                    IWebElement mileageInput = browser_.FindElement(By.Id("tradeInMileageInput"));
+                    mileageInput.Clear();
+                    mileageInput.SendKeys("20000");//placeholder mileage
+                    Trace.WriteLine("mileage: " + mileageInput.Text);
+
+                }
+
+                //reviewDetailsPage.NoTradeInButton.Click();
                 reviewDetailsPage.NextButton.Click();
             }
             catch(Exception ex)

@@ -12,12 +12,23 @@ namespace AutoGravity.PageObjects
     {
         private const string CLASS_NAME = "makeFrame___1XMiK";
         private const string MAKE_IMAGE = "image___1p6Dn";
+        private const string NEW_USED_BUTTONS_SELECTOR = ".newUsed___1D9oj > .btn-group > .btn";
         private Random rng_;//reference obtained from UnitTest
         private IWebElement randomMakeType_;
 
         public MakePage(Random rng,IWebDriver driver) : base(driver)
         {
             rng_ = rng;
+        }
+
+        [FindsBy(How = How.CssSelector, Using = NEW_USED_BUTTONS_SELECTOR)]
+        public IList<IWebElement> NewUsedButtons { get; set; }
+        public bool HasNewUsedButtons { get { return NewUsedButtons.Count > 0; } }
+
+        public IWebElement SelectRandomNewUsedButton()
+        {
+            if (!HasNewUsedButtons) throw new NoSuchElementException("SelectRandomNewUsedButton() invalid class: " + NEW_USED_BUTTONS_SELECTOR);
+            return NewUsedButtons[rng_.Next(NewUsedButtons.Count)];
         }
 
         [FindsBy(How = How.ClassName, Using = CLASS_NAME)]

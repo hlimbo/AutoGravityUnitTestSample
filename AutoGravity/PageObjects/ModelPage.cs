@@ -11,7 +11,7 @@ namespace AutoGravity.PageObjects
         private const string INPUT = "input___26qtV";
         private const string FIND_BUTTON = "blueButton___3S9-a";
         private const string GEO_BUTTON = "geoButton___1PU6W";
-        //private const string LOC_MODAL = "locationModalContent___3yPhK";
+        private const string LOCATION_HEADER_SELECTOR = ".headerLink___RUeIy.zipCode___1l6tm";
         private const string LOC_TEXT_SELECTOR = "span.zipCode___1l6tm";
 
         //use this string to see if location is already set
@@ -39,6 +39,9 @@ namespace AutoGravity.PageObjects
 
         [FindsBy(How = How.ClassName, Using = GEO_BUTTON)]
         public IWebElement UseMyLocationButton { get; set; }
+
+        [FindsBy(How = How.CssSelector, Using = LOCATION_HEADER_SELECTOR)]
+        public IWebElement LocationHeaderButton { get; set; }
 
         [FindsBy(How = How.ClassName, Using = CAR_MODEL)]
         public IList<IWebElement> ModelsCollection{ get; set; }
